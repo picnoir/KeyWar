@@ -4,10 +4,10 @@ velocity :: Float
 velocity = 6
 
 screenWidth :: Float
-screenWidth = 600
+screenWidth = 900
 
 screenHeight :: Float
-screenHeight = 100
+screenHeight = 400
 
 fontScale :: Float
 fontScale = 0.5

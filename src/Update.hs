@@ -2,18 +2,24 @@ module Update (
   updateWorld
 ) where
 
-import Graphics.Gloss.Data.Picture (Picture(..))
+import Control.Monad                  (filterM, when)
+import Graphics.Gloss.Data.Picture    (Picture(..))
+import qualified Physics.Hipmunk as H (spaceRemove)
 
-import World  (World)
+import World  (World(..), Box(..))
 import Consts (velocity, screenWidth)
 
 updateWorld :: Float -> World -> IO World
-updateWorld _ (Pictures pics) = return . Pictures $ fmap moveToRight activePics
+updateWorld _ (World bxs s) = do
+  activePics <- filterM filterOutOfBound bxs
+  return $ World (fmap moveToRight activePics) s 
   where
-    activePics = filter filterOutOfBound pics
+    filterOutOfBound b@(Box (Translate x _ _) _) = do
+      let shouldRemove = x > (- screenWidth / 2)
+      when shouldRemove $ H.spaceRemove s $ body b
+      return shouldRemove
 
-moveToRight :: Picture -> Picture
-moveToRight (Translate x y p) = Translate (x - velocity) y p
-
-filterOutOfBound :: Picture -> Bool
-filterOutOfBound (Translate x _ _) = x > (- screenWidth / 2)
+moveToRight :: Box -> Box
+moveToRight (Box (Translate x y p) b) = Box newPic b
+  where
+    newPic = Translate (x - velocity) y p
