@@ -13,6 +13,7 @@ import qualified Physics.Hipmunk as H   (spaceAdd)
 handleEvents :: Event -> World -> IO World
 handleEvents (EventKey (Char c) Down _ _ ) (World bxs s) = do
   box <- createBox $ T.singleton c
+  H.spaceAdd s $ shape box
   H.spaceAdd s $ body box
   return $ World (box:bxs) s
 handleEvents _ w = return w

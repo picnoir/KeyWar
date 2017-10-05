@@ -2,24 +2,34 @@ module Update (
   updateWorld
 ) where
 
-import Control.Monad                  (filterM, when)
+import Control.Monad                  (filterM, unless)
+import Data.StateVar                  (get)
+import GHC.Float                      (double2Float, float2Double)
 import Graphics.Gloss.Data.Picture    (Picture(..))
-import qualified Physics.Hipmunk as H (spaceRemove)
-
+import qualified Physics.Hipmunk as H (spaceRemove, position,
+                                       Vector(..), step)
 import World  (World(..), Box(..))
-import Consts (velocity, screenWidth)
+import Consts (screenWidth)
+
 
 updateWorld :: Float -> World -> IO World
-updateWorld _ (World bxs s) = do
+updateWorld dt (World bxs s) = do
+  H.step s $ float2Double dt
   activePics <- filterM filterOutOfBound bxs
-  return $ World (fmap moveToRight activePics) s 
+  nbxs <- mapM moveBox activePics
+  return $ World nbxs s 
   where
-    filterOutOfBound b@(Box (Translate x _ _) _) = do
+    filterOutOfBound b@(Box (Translate x _ _) _ _) = do
       let shouldRemove = x > (- screenWidth / 2)
-      when shouldRemove $ H.spaceRemove s $ body b
+      unless shouldRemove . H.spaceRemove s $ body b
+      unless shouldRemove . H.spaceRemove s $ shape b
       return shouldRemove
 
-moveToRight :: Box -> Box
-moveToRight (Box (Translate x y p) b) = Box newPic b
+moveBox :: Box -> IO Box
+moveBox (Box (Translate _ _ p) b sh) = do
+  pos <- get $ H.position b
+  let newPic = Translate (getX pos - 1) (getY pos) p
+  return $ Box newPic b sh
   where
-    newPic = Translate (x - velocity) y p
+    getX (H.Vector x _ ) = double2Float x
+    getY (H.Vector _ y ) = double2Float y

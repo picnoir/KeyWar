@@ -1,8 +1,5 @@
 module Consts where
 
-velocity :: Float
-velocity = 6
-
 screenWidth :: Float
 screenWidth = 900
 

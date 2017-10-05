@@ -17,7 +17,7 @@ main = do
       initWorld <- createWorld
       H.initChipmunk
       playIO
-        (InWindow "KeyWar" (floor screenWidth,floor screenHeight) (10,10))
+        (InWindow "KeyWar" (floor screenWidth,floor screenHeight) (0,0))
         (makeColor 0 255 0 255)
         60
         initWorld

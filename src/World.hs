@@ -5,13 +5,16 @@ module World
   createBox) where
 
 import qualified Data.Text as T              (Text, unpack, length) 
+import           Data.StateVar               (($=))
 import           Graphics.Gloss.Data.Picture (Picture(..))
 import           Graphics.Gloss.Data.Color   (makeColor)
 import           GHC.Float                   (float2Double)
 import qualified Physics.Hipmunk        as H (Body, newBody,
                                               newShape, ShapeType(..),
                                               Vector(..), Space,
-                                              newSpace)
+                                              newSpace,
+                                              Shape, position, 
+                                              applyImpulse, gravity) 
 import Consts                                (fontScale, screenWidth)
 
 data World = World {
@@ -22,14 +25,17 @@ data World = World {
 
 data Box = Box {
   picture :: !Picture,
-  body    :: !H.Body
+  body    :: !H.Body,
+  shape   :: !H.Shape
 }
 
 createBox :: T.Text -> IO Box
 createBox t = do
-  magnificentBody <- H.newBody 20 2
-  H.newShape magnificentBody (H.Polygon boxVertices) (H.Vector 0 0)
-  return $ Box boxPic magnificentBody
+  magnificientBody <- H.newBody 40 5
+  H.position magnificientBody $= H.Vector 100 100
+  H.applyImpulse magnificientBody (H.Vector (-18000) 0) (H.Vector 0 0)
+  magShape <- H.newShape magnificientBody (H.Polygon boxVertices) (H.Vector 0 0)
+  return $ Box boxPic magnificientBody magShape
   where
     boxVertices   = [(H.Vector (-boxWidthD) boxHeightD), (H.Vector boxWidthD boxHeightD), (H.Vector boxWidthD (-boxHeightD)), (H.Vector (-boxWidthD) (-boxHeightD))]
     boxPic        = Translate (screenWidth / 2) 0 $ Pictures [boxGeo, boxText]
@@ -43,4 +49,7 @@ createBox t = do
 createWorld :: IO World
 createWorld = do
   s <- H.newSpace
+  H.gravity s $= ng
   return $ World [] s
+  where
+    ng = H.Vector 0 (-500)
