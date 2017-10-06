@@ -24,7 +24,8 @@ library
                        gloss,
                        text,
                        Hipmunk,
-                       StateVar
+                       StateVar,
+                       random
   default-language:    Haskell2010
 
 executable keywar

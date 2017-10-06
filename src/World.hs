@@ -15,7 +15,8 @@ import qualified Physics.Hipmunk        as H (Body, newBody,
                                               newSpace,
                                               Shape, position, 
                                               applyImpulse, gravity) 
-import Consts                                (fontScale, screenWidth)
+import           System.Random               (randomR, newStdGen)
+import Consts                                (fontScale, screenWidth, screenHeight)
 
 data World = World {
   boxes :: [Box],
@@ -31,11 +32,13 @@ data Box = Box {
 
 createBox :: T.Text -> IO Box
 createBox t = do
-  magnificientBody <- H.newBody 40 5
-  H.position magnificientBody $= H.Vector 100 100
-  H.applyImpulse magnificientBody (H.Vector (-18000) 0) (H.Vector 0 0)
-  magShape <- H.newShape magnificientBody (H.Polygon boxVertices) (H.Vector 0 0)
-  return $ Box boxPic magnificientBody magShape
+  magnificentBody <- H.newBody 40 5
+  H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 2) 
+  gen <- newStdGen
+  let yImp = randomR (1000, 10000) gen
+  H.applyImpulse magnificentBody (H.Vector (-18000) (fst yImp)) (H.Vector 0 0)
+  magShape <- H.newShape magnificentBody (H.Polygon boxVertices) (H.Vector 0 0)
+  return $ Box boxPic magnificentBody magShape
   where
     boxVertices   = [(H.Vector (-boxWidthD) boxHeightD), (H.Vector boxWidthD boxHeightD), (H.Vector boxWidthD (-boxHeightD)), (H.Vector (-boxWidthD) (-boxHeightD))]
     boxPic        = Translate (screenWidth / 2) 0 $ Pictures [boxGeo, boxText]
