@@ -5,7 +5,6 @@ import Graphics.Gloss.Data.Color        (makeColor)
 import Graphics.Gloss.Data.Display      (Display(..))
 import qualified Physics.Hipmunk as H
 
-
 import World   (createWorld)
 import Display (displayWorld)
 import Events  (handleEvents)

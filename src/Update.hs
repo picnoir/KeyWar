@@ -13,11 +13,11 @@ import Consts (screenWidth)
 
 
 updateWorld :: Float -> World -> IO World
-updateWorld dt (World bxs s) = do
+updateWorld dt (World bxs s sprts) = do
   H.step s $ float2Double dt
   activePics <- filterM filterOutOfBound bxs
   nbxs <- mapM moveBox activePics
-  return $ World nbxs s 
+  return $ World nbxs s sprts
   where
     filterOutOfBound b@(Box (Translate x _ _) _ _) = do
       let shouldRemove = x > (- screenWidth / 2)

@@ -4,10 +4,10 @@ module World
   createWorld,
   createBox) where
 
-import qualified Data.Text as T              (Text, unpack, length) 
 import           Data.StateVar               (($=))
+import qualified Data.HashMap.Strict as HM   (HashMap, lookup, (!))
+import           Data.Maybe                  (fromMaybe)
 import           Graphics.Gloss.Data.Picture (Picture(..))
-import           Graphics.Gloss.Data.Color   (makeColor)
 import           GHC.Float                   (float2Double)
 import qualified Physics.Hipmunk        as H (Body, newBody,
                                               newShape, ShapeType(..),
@@ -17,11 +17,17 @@ import qualified Physics.Hipmunk        as H (Body, newBody,
                                               applyImpulse, gravity,
                                               infinity, spaceAdd) 
 import           System.Random               (randomR, newStdGen)
-import Consts                                (fontScale, screenWidth, screenHeight)
+import           Consts                      (screenWidth, screenHeight,
+                                              spritesHM)
+
+
+
+type Sprites = HM.HashMap String Picture
 
 data World = World {
   boxes :: [Box],
-  space :: !H.Space
+  space :: !H.Space,
+  sprites :: Sprites
 }
 
 data Box = Box {
@@ -35,12 +41,12 @@ createWorld = do
   s <- H.newSpace
   createWalls s
   H.gravity s $= ng
-  return $ World [] s
+  return $ World [] s spritesHM
   where
     ng = H.Vector 0 (-500)
 
-createBox :: T.Text -> IO Box
-createBox t = do
+createBox :: String -> Sprites -> IO Box
+createBox t s = do
   magnificentBody <- H.newBody 40 5
   H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 3) 
   gen <- newStdGen
@@ -50,13 +56,12 @@ createBox t = do
   return $ Box boxPic magnificentBody magShape
   where
     boxVertices   = [H.Vector (-boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (-boxHeightD / 2), H.Vector (-boxWidthD / 2) (-boxHeightD / 2)]
-    boxPic        = Translate (screenWidth / 2) 0 $ Pictures [boxGeo, boxText]
-    boxText       = Translate (-8) (-25) $ Scale fontScale fontScale $ Color (makeColor 0 0 0 255) $ Text $ T.unpack t
-    boxGeo        = Color (makeColor 255 255 255 255) $ Polygon [(-boxWidth / 2,boxHeight / 2),(boxWidth / 2,boxHeight / 2),(boxWidth / 2,-(boxHeight / 2)),(-(boxWidth / 2),-(boxHeight / 2))]
+    boxPic        = Translate (screenWidth / 2) 0 $ boxTex
+    boxTex        = fromMaybe (s HM.! "?") $  HM.lookup t s
     boxHeightD    = float2Double boxHeight
     boxWidthD     = float2Double boxWidth
-    boxHeight     = 70.0
-    boxWidth      = 40 + 30.0 * fromIntegral (T.length t)
+    boxHeight     = 100
+    boxWidth      = 100
 
 createWalls :: H.Space -> IO ()
 createWalls s = do

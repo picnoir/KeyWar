@@ -25,7 +25,12 @@ library
                        text,
                        Hipmunk,
                        StateVar,
-                       random
+                       random,
+                       file-embed,
+                       bytestring,
+                       unordered-containers,
+                       bmp,
+                       extra
   default-language:    Haskell2010
 
 executable keywar
@@ -36,6 +41,7 @@ executable keywar
                      , KeyWar
                      , gloss
                      , Hipmunk
+                     , bmp
   default-language:    Haskell2010
 
 test-suite KeyWar-test
