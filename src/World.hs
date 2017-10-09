@@ -4,6 +4,7 @@ module World
   createWorld,
   createBox) where
 
+import           Data.Char                   (toLower)
 import           Data.StateVar               (($=))
 import qualified Data.HashMap.Strict as HM   (HashMap, lookup, (!))
 import           Data.Maybe                  (fromMaybe)
@@ -56,12 +57,12 @@ createBox t s = do
   return $ Box boxPic magnificentBody magShape
   where
     boxVertices   = [H.Vector (-boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (-boxHeightD / 2), H.Vector (-boxWidthD / 2) (-boxHeightD / 2)]
-    boxPic        = Translate (screenWidth / 2) 0 $ boxTex
-    boxTex        = fromMaybe (s HM.! "?") $  HM.lookup t s
+    boxPic        = Translate (screenWidth / 2) 0 $ Scale 0.5 0.5 boxTex
+    boxTex        = fromMaybe (s HM.! "?") $  HM.lookup (fmap toLower t) s
     boxHeightD    = float2Double boxHeight
     boxWidthD     = float2Double boxWidth
-    boxHeight     = 100
-    boxWidth      = 100
+    boxHeight     = 50
+    boxWidth      = 50
 
 createWalls :: H.Space -> IO ()
 createWalls s = do
