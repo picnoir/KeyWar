@@ -4,6 +4,7 @@ module World
   createWorld,
   createBox) where
 
+import           Control.Concurrent.STM.TChan(TChan)
 import           Data.Char                   (toLower)
 import           Data.StateVar               (($=))
 import qualified Data.HashMap.Strict as HM   (HashMap, lookup, (!))
@@ -26,9 +27,11 @@ import           Consts                      (screenWidth, screenHeight,
 type Sprites = HM.HashMap String Picture
 
 data World = World {
-  boxes :: [Box],
-  space :: !H.Space,
-  sprites :: Sprites
+  boxes   :: [Box],
+  space   :: !H.Space,
+  sprites :: Sprites,
+  chan    :: TChan String,
+  enabled :: Bool
 }
 
 data Box = Box {
@@ -37,17 +40,17 @@ data Box = Box {
   shape   :: !H.Shape
 }
 
-createWorld :: IO World
-createWorld = do
+createWorld :: TChan String -> IO World
+createWorld evtsChan = do
   s <- H.newSpace
   createWalls s
   H.gravity s $= ng
-  return $ World [] s spritesHM
+  return $ World [] s spritesHM evtsChan True
   where
     ng = H.Vector 0 (-500)
 
-createBox :: String -> Sprites -> IO Box
-createBox t s = do
+createBox :: Sprites -> String -> IO Box
+createBox s t = do
   magnificentBody <- H.newBody 40 5
   H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 3) 
   gen <- newStdGen
