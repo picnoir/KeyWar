@@ -47,6 +47,7 @@ executable keywar
                      , tailfile-hinotify
                      , bytestring
                      , stm
+                     , parseargs
   default-language:    Haskell2010
 
 test-suite KeyWar-test

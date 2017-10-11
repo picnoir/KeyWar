@@ -5,10 +5,15 @@ import Control.Concurrent.STM.TChan          (TChan, newTChanIO, writeTChan)
 import Control.Concurrent                    (forkIO, killThread)
 import qualified Data.ByteString as BS       (ByteString)
 import qualified Data.ByteString.Char8 as BC (unpack)
+import Data.Maybe                            (fromMaybe)
 import Graphics.Gloss.Interface.IO.Game      (playIO)
 import Graphics.Gloss.Data.Color             (makeColor)
 import Graphics.Gloss.Data.Display           (Display(..))
 import qualified Physics.Hipmunk as H
+import System.Console.ParseArgs              (parseArgsIO, ArgsParseControl(..),
+                                              ArgsComplete(..), ArgsDash(..),
+                                              Arg(..), Argtype(..), argDataDefaulted,
+                                              getArg, Args)
 import System.IO.TailFile                    (tailFile)
 
 
@@ -21,7 +26,8 @@ import Consts  (screenWidth, screenHeight)
 main :: IO ()
 main = do
   evtsChan <- newTChanIO
-  threadId <- forkIO $ inputReaderThread evtsChan
+  logFilePath <- getLoggerFile
+  threadId <- forkIO $ inputReaderThread logFilePath evtsChan
   graphicsThread evtsChan
   killThread threadId
   return ()
@@ -39,10 +45,17 @@ graphicsThread evtsChan = do
         handleEvents
         updateWorld
 
-inputReaderThread :: TChan String ->  IO ()
-inputReaderThread evtsChan = tailFile "/home/minoulefou/test.log" update $ return evtsChan
+inputReaderThread :: FilePath -> TChan String ->  IO ()
+inputReaderThread logFile evtsChan = tailFile logFile update $ return evtsChan
 
 update :: TChan String -> BS.ByteString -> IO (TChan String)
 update evtsChan input = do
-  atomically $ writeTChan evtsChan $ BC.unpack input
+  atomically . writeTChan evtsChan $ BC.unpack input
   return evtsChan
+
+getLoggerFile :: IO FilePath
+getLoggerFile = do
+  let apc = ArgsParseControl ArgsComplete ArgsHardDash
+  let args = [Arg 0 (Just 'l') (Just "logFile") (argDataDefaulted "logFile" ArgtypeString "/tmp/keylogger.log") "Logger output file."]
+  rArgs <- parseArgsIO apc args :: IO (Args Integer)
+  return . fromMaybe "/tmp/keylogger.log" $ getArg rArgs 0
