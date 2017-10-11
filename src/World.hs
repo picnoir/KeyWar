@@ -61,7 +61,7 @@ createBox s t = do
   where
     boxVertices   = [H.Vector (-boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (-boxHeightD / 2), H.Vector (-boxWidthD / 2) (-boxHeightD / 2)]
     boxPic        = Translate screenWidth 0 $ Scale 0.5 0.5 boxTex
-    boxTex        = fromMaybe (s HM.! "?") $  HM.lookup (fmap toLower t) s
+    boxTex        = fromMaybe (s HM.! "?") $  HM.lookup (toLower <$> logKeysToSpriteTransco t) s
     boxHeightD    = float2Double boxHeight
     boxWidthD     = float2Double boxWidth
     boxHeight     = 50
@@ -77,3 +77,25 @@ createWalls s = do
     bPath = H.LineSegment (H.Vector (-sScreenWidth / 2) (-sScreenHeight / 2)) (H.Vector (-sScreenWidth / 2) (-sScreenHeight / 2)) 1
     sScreenWidth = float2Double screenWidth
     sScreenHeight = float2Double screenHeight
+
+logKeysToSpriteTransco :: String -> String
+logKeysToSpriteTransco input =
+  case input of
+    "<CpsLk>"   -> "esc"
+    "<LShft>"   -> "shift"
+    "<RShft>"   -> "shift"
+    "<LCtrl>"    -> "ctrl"
+    "<RCtrl>"    -> "ctrl"
+    "<LAlt>"    -> "alt"
+    "<RAlt>"    -> "alt"
+    "<BckSp>"   -> "backspace"
+    "<Left>"    -> "left"
+    "<Right>"   -> "right"
+    "<Down>"    -> "down"
+    "<Up>"      -> "up"
+    "<Tab>"     -> "tab"
+    " "         -> "space"
+    "\n"        -> "enter"
+    "\\"        -> "backspace"
+    "/"         -> "slash"
+    _           -> input
