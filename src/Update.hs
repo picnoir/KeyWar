@@ -21,7 +21,6 @@ updateWorld dt (World bxs s sprts evtsChan e) = do
   nBoxMb <- mapM (createBox sprts) boxText
   let nEnabled = maybe e toggleEnabled nEvent
   let nBox = maybeToList nBoxMb
-  --TODO: Refactor that block
   unless (null nBox) $ do
      H.spaceAdd s $ shape $ head nBox
      H.spaceAdd s $ body $ head nBox

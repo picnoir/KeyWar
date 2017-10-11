@@ -1,15 +1,15 @@
 module Main where
 
-import Control.Concurrent.STM           (atomically)
-import Control.Concurrent.STM.TChan     (TChan, newTChanIO, writeTChan)
-import Control.Concurrent               (forkIO)
-import qualified Data.ByteString as BS  (ByteString)
-import qualified Data.ByteString.Char8 as BC       (unpack)
-import Graphics.Gloss.Interface.IO.Game (playIO)
-import Graphics.Gloss.Data.Color        (makeColor)
-import Graphics.Gloss.Data.Display      (Display(..))
+import Control.Concurrent.STM                (atomically)
+import Control.Concurrent.STM.TChan          (TChan, newTChanIO, writeTChan)
+import Control.Concurrent                    (forkIO, killThread)
+import qualified Data.ByteString as BS       (ByteString)
+import qualified Data.ByteString.Char8 as BC (unpack)
+import Graphics.Gloss.Interface.IO.Game      (playIO)
+import Graphics.Gloss.Data.Color             (makeColor)
+import Graphics.Gloss.Data.Display           (Display(..))
 import qualified Physics.Hipmunk as H
-import System.IO.TailFile (tailFile)
+import System.IO.TailFile                    (tailFile)
 
 
 import World   (createWorld)
@@ -21,8 +21,9 @@ import Consts  (screenWidth, screenHeight)
 main :: IO ()
 main = do
   evtsChan <- newTChanIO
-  _ <- forkIO $ inputReaderThread evtsChan
+  threadId <- forkIO $ inputReaderThread evtsChan
   graphicsThread evtsChan
+  killThread threadId
   return ()
 
 graphicsThread :: TChan String -> IO ()
@@ -39,8 +40,7 @@ graphicsThread evtsChan = do
         updateWorld
 
 inputReaderThread :: TChan String ->  IO ()
-inputReaderThread evtsChan = do
-  tailFile "/home/minoulefou/test.log" update $ return evtsChan
+inputReaderThread evtsChan = tailFile "/home/minoulefou/test.log" update $ return evtsChan
 
 update :: TChan String -> BS.ByteString -> IO (TChan String)
 update evtsChan input = do
