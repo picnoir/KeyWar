@@ -29,9 +29,9 @@ type Sprites = HM.HashMap String Picture
 data World = World {
   boxes   :: [Box],
   space   :: !H.Space,
-  sprites :: Sprites,
-  chan    :: TChan String,
-  enabled :: Bool
+  sprites :: !Sprites,
+  chan    :: !(TChan String),
+  enabled :: !Bool
 }
 
 data Box = Box {
@@ -52,7 +52,7 @@ createWorld evtsChan = do
 createBox :: Sprites -> String -> IO Box
 createBox s t = do
   magnificentBody <- H.newBody 40 5
-  H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 3) 
+  H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 5) 
   gen <- newStdGen
   let yImp = randomR (1000, 10000) gen
   H.applyImpulse magnificentBody (H.Vector (-18000) (fst yImp)) (H.Vector 0 0)
@@ -81,21 +81,21 @@ createWalls s = do
 logKeysToSpriteTransco :: String -> String
 logKeysToSpriteTransco input =
   case input of
-    "<CpsLk>"   -> "esc"
-    "<LShft>"   -> "shift"
-    "<RShft>"   -> "shift"
-    "<LCtrl>"    -> "ctrl"
-    "<RCtrl>"    -> "ctrl"
-    "<LAlt>"    -> "alt"
-    "<RAlt>"    -> "alt"
-    "<BckSp>"   -> "backspace"
-    "<Left>"    -> "left"
-    "<Right>"   -> "right"
-    "<Down>"    -> "down"
-    "<Up>"      -> "up"
-    "<Tab>"     -> "tab"
-    " "         -> "space"
-    "\n"        -> "enter"
-    "\\"        -> "backspace"
-    "/"         -> "slash"
-    _           -> input
+    "<CpsLk>"  -> "esc"
+    "<LShft>"  -> "shift"
+    "<RShft>"  -> "shift"
+    "<LCtrl>"  -> "ctrl"
+    "<RCtrl>"  -> "ctrl"
+    "<LAlt>"   -> "alt"
+    "<AltGr>"  -> "alt"
+    "<BckSp>"  -> "backspace"
+    "<Left>"   -> "left"
+    "<Right>"  -> "right"
+    "<Down>"   -> "down"
+    "<Up>"     -> "up"
+    "<Tab>"    -> "tab"
+    " "        -> "space"
+    "\n"       -> "enter"
+    "\\"       -> "aslash"
+    "/"        -> "slash"
+    _          -> input
