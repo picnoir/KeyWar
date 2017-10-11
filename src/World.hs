@@ -10,7 +10,7 @@ import           Data.StateVar               (($=))
 import qualified Data.HashMap.Strict as HM   (HashMap, lookup, (!))
 import           Data.Maybe                  (fromMaybe)
 import           Graphics.Gloss.Data.Picture (Picture(..))
-import           GHC.Float                   (float2Double, double2Float)
+import           GHC.Float                   (float2Double)
 import qualified Physics.Hipmunk        as H (Body, newBody,
                                               newShape, ShapeType(..),
                                               Vector(..), Space,
@@ -19,7 +19,7 @@ import qualified Physics.Hipmunk        as H (Body, newBody,
                                               applyImpulse, gravity,
                                               infinity, spaceAdd,
                                               friction, elasticity,
-                                              StaticShape(..))
+                                              momentForPoly, StaticShape(..))
 import           System.Random               (randomR, newStdGen)
 import           Consts                      (screenWidth, screenHeight,
                                               spritesHM)
@@ -45,23 +45,24 @@ data Box = Box {
 createWorld :: TChan String -> IO World
 createWorld evtsChan = do
   s <- H.newSpace
-  f <- createWalls s
+  createWalls s
   H.gravity s $= ng
-  return $ World [f] s spritesHM evtsChan True
+  return $ World [] s spritesHM evtsChan True
   where
     ng = H.Vector 0 (-500)
 
 createBox :: Sprites -> String -> IO Box
 createBox s t = do
-  magnificentBody <- H.newBody 40 5
   gen <- newStdGen
-  let yImp = randomR (1000, 10000) gen
-  H.applyImpulse magnificentBody (H.Vector (-18000) (fst yImp)) (H.Vector 0 0)
+  let yImp = randomR (10, 100) gen
   let dy = randomR (0, 100) gen
-  H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 5 + (fst dy)) 
+  let mBodyI = H.momentForPoly 10 boxVertices (H.Vector 0 0)
+  magnificentBody <- H.newBody 10 mBodyI
+  H.applyImpulse magnificentBody (H.Vector (-6500) (fst yImp)) (H.Vector 0 0)
+  H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 5 + fst dy) 
   magShape <- H.newShape magnificentBody (H.Polygon boxVertices) (H.Vector 0 0)
-  H.friction magShape $= 1
-  H.elasticity magShape $= 1 
+  H.friction magShape $= 2
+  H.elasticity magShape $= 0.5 
   return $ Box boxPic magnificentBody magShape
   where
     boxVertices   = [H.Vector (-boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (-boxHeightD / 2), H.Vector (-boxWidthD / 2) (-boxHeightD / 2)]
@@ -72,21 +73,18 @@ createBox s t = do
     boxHeight     = 50
     boxWidth      = 50
 
-createWalls :: H.Space -> IO Box 
+createWalls :: H.Space -> IO ()
 createWalls s = do
-  bBody <- H.newBody 0 0
+  bBody <- H.newBody H.infinity H.infinity 
   bShape <- H.newShape bBody bPath (H.Vector 0 0)
   H.position bBody $= H.Vector 0 0
-  H.friction bShape $= H.infinity
-  H.elasticity bShape $= 1
+  H.friction bShape $= 0.1
+  H.elasticity bShape $= 1 
   H.spaceAdd s (H.Static bShape)
-  return $ Box (Translate 0 0 $ Line path) bBody bShape
   where
-    bPath         = H.LineSegment (H.Vector (-sScreenWidth / 2) (-sScreenHeight / 2)) (H.Vector (-sScreenWidth / 2) (-sScreenHeight / 2)) 1
+    bPath         = H.LineSegment (H.Vector (-sScreenWidth / 2) (-sScreenHeight / 2)) (H.Vector (sScreenWidth / 2) (-sScreenHeight / 2)) 1
     sScreenWidth  = float2Double screenWidth
     sScreenHeight = float2Double screenHeight
-    fScreenWidth  = double2Float sScreenWidth
-    path          = [(0, 0), (fScreenWidth/2, 0)]
 
 logKeysToSpriteTransco :: String -> String
 logKeysToSpriteTransco input =

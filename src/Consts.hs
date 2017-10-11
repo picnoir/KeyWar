@@ -13,7 +13,7 @@ import Graphics.Gloss                      (bitmapOfBMP, Picture)
 
 
 screenWidth :: Float
-screenWidth = 900
+screenWidth = 1500
 
 screenHeight :: Float
 screenHeight = 400
