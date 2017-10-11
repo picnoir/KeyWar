@@ -10,4 +10,4 @@ import World (World(..), Box(..))
 displayWorld :: World -> IO Picture
 displayWorld w = return $ Pictures pics 
   where
-    pics = fmap picture (boxes w)
+    pics = picture <$> boxes w

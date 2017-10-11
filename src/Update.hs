@@ -22,8 +22,8 @@ updateWorld dt (World bxs s sprts evtsChan e) = do
   let nEnabled = maybe e toggleEnabled nEvent
   let nBox = maybeToList nBoxMb
   unless (null nBox) $ do
-     H.spaceAdd s $ shape $ head nBox
-     H.spaceAdd s $ body $ head nBox
+     H.spaceAdd s . body $ head nBox
+     H.spaceAdd s . shape $ head nBox
   H.step s $ float2Double dt
   activePics <- filterM filterOutOfBound bxs
   nbxs <- mapM moveBox activePics
@@ -44,7 +44,7 @@ updateWorld dt (World bxs s sprts evtsChan e) = do
 moveBox :: Box -> IO Box
 moveBox (Box (Translate _ _ p) b sh) = do
   pos <- get $ H.position b
-  let newPic = Translate (getX pos - 1) (getY pos) p
+  let newPic = Translate (getX pos) (getY pos) p
   return $ Box newPic b sh
   where
     getX (H.Vector x _ ) = double2Float x
