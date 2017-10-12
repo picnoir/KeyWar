@@ -96,6 +96,8 @@ logKeysToSpriteTransco input =
     "<RCtrl>"  -> "ctrl"
     "<LAlt>"   -> "alt"
     "<AltGr>"  -> "alt"
+    "<LMeta>"  -> "super"
+    "<RMeta>"  -> "super"
     "<BckSp>"  -> "backspace"
     "<Left>"   -> "left"
     "<Right>"  -> "right"
