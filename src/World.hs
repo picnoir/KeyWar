@@ -66,7 +66,7 @@ createBox s t = do
   return $ Box boxPic magnificentBody magShape
   where
     boxVertices   = [H.Vector (-boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (-boxHeightD / 2), H.Vector (-boxWidthD / 2) (-boxHeightD / 2)]
-    boxPic        = Translate screenWidth 0 $ Scale 0.5 0.5 boxTex
+    boxPic        = Translate screenWidth 0 $ Rotate 0 $ Scale 0.5 0.5 boxTex
     boxTex        = fromMaybe (s HM.! "?") $  HM.lookup (toLower <$> logKeysToSpriteTransco t) s
     boxHeightD    = float2Double boxHeight
     boxWidthD     = float2Double boxWidth

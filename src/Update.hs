@@ -10,7 +10,8 @@ import Data.StateVar                  (get)
 import GHC.Float                      (double2Float, float2Double)
 import Graphics.Gloss.Data.Picture    (Picture(..))
 import qualified Physics.Hipmunk as H (spaceRemove, position,
-                                       Vector(..), step, spaceAdd)
+                                       Vector(..), step, spaceAdd,
+                                       angle)
 import World  (World(..), Box(..), createBox)
 import Consts (screenWidth)
 
@@ -42,10 +43,12 @@ updateWorld dt (World bxs s sprts evtsChan e) = do
                           else "?"
 
 moveBox :: Box -> IO Box
-moveBox (Box (Translate _ _ p) b sh) = do
+moveBox (Box (Translate _ _ (Rotate _ p)) b sh) = do
   pos <- get $ H.position b
-  let newPic = Translate (getX pos) (getY pos) p
+  rot <- get $ H.angle b
+  let newPic = Translate (getX pos) (getY pos) $ Rotate (double2Float $  newAngle rot) p
   return $ Box newPic b sh
   where
+    newAngle pA = (-pA) * 180 / 3.14
     getX (H.Vector x _ ) = double2Float x
     getY (H.Vector _ y ) = double2Float y
