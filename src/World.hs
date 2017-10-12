@@ -51,20 +51,26 @@ createWorld evtsChan = do
   where
     ng = H.Vector 0 (-500)
 
-createBox :: Sprites -> String -> IO Box
-createBox s t = do
+createBox :: Bool -> Sprites -> String -> IO Box
+createBox heavyBox s t = do
   gen <- newStdGen
-  let yImp = randomR (10, 100) gen
-  let dy = randomR (0, 100) gen
-  let mBodyI = H.momentForPoly 10 boxVertices (H.Vector 0 0)
+  let yImp   = randomR (10, 100) gen
+  let dy     = randomR (0, 100) gen
+  let mBodyI = H.momentForPoly bMass boxVertices (H.Vector 0 0)
   magnificentBody <- H.newBody 10 mBodyI
-  H.applyImpulse magnificentBody (H.Vector (-6500) (fst yImp)) (H.Vector 0 0)
+  H.applyImpulse magnificentBody (H.Vector (-xImp) (fst yImp)) (H.Vector 0 0)
   H.position magnificentBody $= H.Vector (float2Double $ screenWidth / 2) (float2Double $ screenHeight / 5 + fst dy) 
   magShape <- H.newShape magnificentBody (H.Polygon boxVertices) (H.Vector 0 0)
   H.friction magShape $= 2
   H.elasticity magShape $= 0.5 
   return $ Box boxPic magnificentBody magShape
   where
+    xImp          = if heavyBox
+                      then 6500
+                      else 10000
+    bMass         = if heavyBox
+                      then 50
+                      else 10
     boxVertices   = [H.Vector (-boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (boxHeightD / 2), H.Vector (boxWidthD / 2) (-boxHeightD / 2), H.Vector (-boxWidthD / 2) (-boxHeightD / 2)]
     boxPic        = Translate screenWidth 0 $ Rotate 0 $ Scale 0.5 0.5 boxTex
     boxTex        = fromMaybe (s HM.! "?") $  HM.lookup (toLower <$> logKeysToSpriteTransco t) s
@@ -76,11 +82,15 @@ createBox s t = do
 createWalls :: H.Space -> IO ()
 createWalls s = do
   bBody <- H.newBody H.infinity H.infinity 
-  bShape <- H.newShape bBody bPath (H.Vector 0 0)
+  bBottomShape <- H.newShape bBody bPath (H.Vector 0 0)
+  bTopShape <- H.newShape bBody bPath (H.Vector 0 sScreenHeight)
   H.position bBody $= H.Vector 0 0
-  H.friction bShape $= 0.1
-  H.elasticity bShape $= 1 
-  H.spaceAdd s (H.Static bShape)
+  H.friction bBottomShape $= 0.1
+  H.friction bTopShape $= 0.1
+  H.elasticity bBottomShape $= 1 
+  H.elasticity bTopShape $= 1 
+  H.spaceAdd s (H.Static bTopShape)
+  H.spaceAdd s (H.Static bBottomShape)
   where
     bPath         = H.LineSegment (H.Vector (-sScreenWidth / 2) (-sScreenHeight / 2)) (H.Vector (sScreenWidth / 2) (-sScreenHeight / 2)) 1
     sScreenWidth  = float2Double screenWidth

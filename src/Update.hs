@@ -19,7 +19,7 @@ updateWorld :: Float -> World -> IO World
 updateWorld dt (World bxs s sprts evtsChan e) = do
   nEvent <- atomically $ tryReadTChan evtsChan
   let boxText = handleEnabled <$> nEvent
-  nBoxMb <- mapM (createBox sprts) boxText
+  nBoxMb <- mapM (createBox e sprts) boxText
   let nEnabled = maybe e toggleEnabled nEvent
   let nBox = maybeToList nBoxMb
   unless (null nBox) $ do
