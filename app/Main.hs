@@ -3,13 +3,13 @@ module Main where
 import Control.Concurrent.STM                (atomically)
 import Control.Concurrent.STM.TChan          (TChan, newTChanIO, writeTChan)
 import Control.Concurrent                    (forkIO, killThread)
-import qualified Data.ByteString as BS       (ByteString)
+import qualified Data.ByteString       as BS (ByteString)
 import qualified Data.ByteString.Char8 as BC (unpack)
 import Data.Maybe                            (fromMaybe)
 import Graphics.Gloss.Interface.IO.Game      (playIO)
 import Graphics.Gloss.Data.Color             (makeColor)
 import Graphics.Gloss.Data.Display           (Display(..))
-import qualified Physics.Hipmunk as H
+import qualified Physics.Hipmunk        as H (initChipmunk)
 import System.Console.ParseArgs              (parseArgsIO, ArgsParseControl(..),
                                               ArgsComplete(..), ArgsDash(..),
                                               Arg(..), Argtype(..), argDataDefaulted,
@@ -17,17 +17,17 @@ import System.Console.ParseArgs              (parseArgsIO, ArgsParseControl(..),
 import System.IO.TailFile                    (tailFile)
 
 
-import World   (createWorld)
-import Display (displayWorld)
-import Events  (handleEvents)
-import Update  (updateWorld)
-import Consts  (screenWidth, screenHeight)
+import World                                 (createWorld)
+import Display                               (displayWorld)
+import Events                                (handleEvents)
+import Update                                (updateWorld)
+import Consts                                (screenWidth, screenHeight)
 
 main :: IO ()
 main = do
-  evtsChan <- newTChanIO
+  evtsChan    <- newTChanIO
   logFilePath <- getLoggerFile
-  threadId <- forkIO $ inputReaderThread logFilePath evtsChan
+  threadId    <- forkIO $ inputReaderThread logFilePath evtsChan
   graphicsThread evtsChan
   killThread threadId
   return ()
@@ -56,6 +56,8 @@ update evtsChan input = do
 getLoggerFile :: IO FilePath
 getLoggerFile = do
   let apc = ArgsParseControl ArgsComplete ArgsHardDash
-  let args = [Arg 0 (Just 'l') (Just "logFile") (argDataDefaulted "logFile" ArgtypeString "/tmp/keylogger.log") "Logger output file."]
+  let args = [Arg 0 (Just 'l') (Just "logFile") 
+              (argDataDefaulted "logFile" ArgtypeString "/tmp/keylogger.log")
+                "Logger output file."]
   rArgs <- parseArgsIO apc args :: IO (Args Integer)
   return . fromMaybe "/tmp/keylogger.log" $ getArg rArgs 0
