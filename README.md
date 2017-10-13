@@ -2,6 +2,8 @@
 
 KeyWar is a twitch overlay displaying what you are typing, greatly inspired by [Jessica's Mak](https://www.twitch.tv/jessicamak) one.
 
+![Live demo gif](https://raw.githubusercontent.com/NinjaTrappeur/KeyWar/master/doc/img/keywar-demo.gif)
+
 This software works conjointly with the [logkeys](https://github.com/kernc/logkeys) keylogger. 
 
 ## Passwords
